@@ -1,0 +1,33 @@
+.control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 64px;
+  padding: 0 26px;
+  border-radius: 32px;
+  font-size: 26px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  transition:
+    background 120ms var(--ease),
+    color 120ms var(--ease);
+}
+
+.control svg {
+  width: 32px;
+  height: 32px;
+}
+
+.control-value {
+  color: var(--mute);
+}
+
+.control:global(.is-focused) {
+  background: var(--paper);
+  color: #111;
+}
+
+.control:global(.is-focused) .control-value {
+  color: rgba(0, 0, 0, 0.55);
+}

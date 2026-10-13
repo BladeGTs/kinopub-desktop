@@ -1,0 +1,66 @@
+appId: ru.vrnn.kinopub.desktop
+productName: KinoPub
+copyright: Copyright © KinoPub TV contributors
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron/main.cjs
+  - electron/preload.cjs
+  - electron/proxy.cjs
+  - electron/window-policy.cjs
+  - electron/icons/icon.png
+  - webos/largeIcon-v3.png
+extraMetadata:
+  version: 1.4.11
+  description: KinoPub desktop client
+  author: KinoPub TV contributors
+asar: true
+win:
+  artifactName: KinoPub-${version}-windows-${arch}.${ext}
+  icon: electron/icons/icon.ico
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+mac:
+  icon: electron/icons/icon.icns
+  category: public.app-category.entertainment
+  target:
+    - dmg
+    - zip
+linux:
+  artifactName: KinoPub-${version}-ubuntu-${arch}.${ext}
+  maintainer: KinoPub TV contributors <maintainers@kinopub.invalid>
+  category: AudioVideo
+  icon: electron/icons/icon.png
+  target:
+    - AppImage
+    - deb
+deb:
+  depends:
+    - libc6 (>= 2.31)
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libnspr4
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libuuid1
+    - libsecret-1-0
+    - libgbm1
+    - libdrm2
+    - libasound2t64 | libasound2
+    - libx11-6
+    - libxcb1
+    - libxcomposite1
+    - libxdamage1
+    - libxfixes3
+    - libxrandr2
+    - libpango-1.0-0
+    - libcairo2
+    - libdbus-1-3
+    - libcups2t64 | libcups2

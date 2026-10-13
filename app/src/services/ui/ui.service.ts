@@ -1,0 +1,124 @@
+import { makeAutoObservable, observable } from 'mobx'
+import type { ItemShort } from '@/services/api/api.types'
+import { toggleFullscreen } from '@/shared/lib/fullscreen'
+
+const TOAST_MS = 2200
+// On rapid steps (held arrow) the info block updates once focus settles: re-rendering large text every step drops frames.
+const FOCUS_SETTLE_MS = 180
+
+export interface FocusedItem {
+  item: ItemShort
+  note?: string
+}
+
+export class UiService {
+  backdrop = ''
+  /** Magic Remote pointer in use: hover may take focus. Keys turn it off so rows moving under a resting cursor don't steal focus back. */
+  pointer = false
+  /** Trailer the current screen wants behind its hero; the backdrop plays it once focus is off the cards. */
+  trailer = ''
+  toast = ''
+  pageFocusKey = ''
+  focused: FocusedItem | null = null
+  private toastTimer: number | null = null
+  private focusTimer: number | null = null
+  private blurTimer: number | null = null
+  private lastFocusAt = -Infinity
+
+  constructor() {
+    makeAutoObservable<this, 'toastTimer' | 'focusTimer' | 'blurTimer' | 'lastFocusAt'>(
+      this,
+      { toastTimer: false, focusTimer: false, blurTimer: false, lastFocusAt: false, focused: observable.ref },
+      { autoBind: true },
+    )
+    // webOS announces the pointer; movement and keys cover browsers and the pointer resting on the screen.
+    document.addEventListener('cursorStateChange', (event) =>
+      this.setPointer(!!(event as CustomEvent<{ visibility: boolean }>).detail?.visibility),
+    )
+    document.addEventListener('mousemove', () => this.setPointer(true), true)
+    document.addEventListener('mousedown', () => this.setPointer(true), true)
+    window.addEventListener('keydown', () => this.setPointer(false), true)
+  }
+
+  setPointer(visible: boolean) {
+    if (visible !== this.pointer) this.pointer = visible
+  }
+
+  async toggleFullscreen() {
+    try {
+      await toggleFullscreen()
+    } catch {
+      this.showToast('Не удалось переключить полный экран')
+    }
+  }
+
+  setPageFocusKey(key: string) {
+    this.pageFocusKey = key
+  }
+
+  focusItem(item: ItemShort, note?: string) {
+    const now = performance.now()
+    const rapid = now - this.lastFocusAt < FOCUS_SETTLE_MS
+
+    this.lastFocusAt = now
+    this.cancelTimers()
+    const next = { item, note }
+
+    if (!rapid) {
+      this.setFocused(next)
+
+      return
+    }
+
+    this.focusTimer = window.setTimeout(() => this.setFocused(next), FOCUS_SETTLE_MS)
+  }
+
+  // Clear on the next tick: if focus moved to a neighbouring card, its focusItem cancels this and the block doesn't flash.
+  blurItem() {
+    if (this.blurTimer) clearTimeout(this.blurTimer)
+
+    this.blurTimer = window.setTimeout(this.clearFocusedItem, 0)
+  }
+
+  clearFocusedItem() {
+    this.cancelTimers()
+    this.focused = null
+  }
+
+  private cancelTimers() {
+    if (this.focusTimer) clearTimeout(this.focusTimer)
+    if (this.blurTimer) clearTimeout(this.blurTimer)
+
+    this.focusTimer = null
+    this.blurTimer = null
+  }
+
+  private setFocused(focused: FocusedItem) {
+    this.focused = focused
+  }
+
+  setBackdrop(url: string) {
+    if (url !== this.backdrop) this.backdrop = url
+  }
+
+  clearBackdrop() {
+    this.setBackdrop('')
+  }
+
+  setTrailer(url: string) {
+    if (url !== this.trailer) this.trailer = url
+  }
+
+  clearTrailer() {
+    this.setTrailer('')
+  }
+
+  showToast(text: string, ms = TOAST_MS) {
+    this.toast = text
+    if (this.toastTimer) clearTimeout(this.toastTimer)
+
+    this.toastTimer = window.setTimeout(() => {
+      this.toast = ''
+    }, ms)
+  }
+}

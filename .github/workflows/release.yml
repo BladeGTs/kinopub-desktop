@@ -1,0 +1,144 @@
+name: Release
+
+# vX.Y.Z releases Windows and Ubuntu installers, plus the existing webOS package.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - name: Set all versions from tag
+        run: node scripts/set-release-version.mjs
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --dir app
+      - name: Check
+        run: pnpm --dir app check
+
+  desktop:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            target: --win nsis --x64
+            extension: exe
+          - os: ubuntu-24.04
+            platform: ubuntu
+            target: --linux deb --x64
+            extension: deb
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - name: Set all versions from tag
+        run: node scripts/set-release-version.mjs
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --dir app
+      - name: Build installer
+        working-directory: app
+        run: |
+          pnpm build
+          pnpm exec electron-builder ${{ matrix.target }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Validate Debian package
+        if: matrix.platform == 'ubuntu'
+        run: |
+          set -euo pipefail
+          package=(app/release/*.deb)
+          test "${#package[@]}" -eq 1
+          test "$(dpkg-deb --field "${package[0]}" Version)" = "${GITHUB_REF_NAME#v}"
+          test "$(dpkg-deb --field "${package[0]}" Architecture)" = amd64
+          dpkg-deb --contents "${package[0]}"
+          sudo apt-get update
+          sudo apt-get install -y "./${package[0]}"
+          test -x /opt/KinoPub/kinopub-tv
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.platform }}
+          path: app/release/*.${{ matrix.extension }}
+          if-no-files-found: error
+
+  webos:
+    needs: check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - name: Set all versions from tag
+        run: node scripts/set-release-version.mjs
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile --dir app
+          npm install --global @webos-tools/cli
+      - name: Build webOS package
+        run: bash scripts/package.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-webos
+          path: build/*.ipk
+          if-no-files-found: error
+
+  publish:
+    needs: [desktop, webos]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          path: packages
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: packages
+        run: sha256sum *.exe *.deb *.ipk > SHA256SUMS
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" packages/* --clobber
+          else
+            gh release create "$RELEASE_TAG" packages/* --verify-tag --title "$RELEASE_TAG" --generate-notes
+          fi

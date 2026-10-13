@@ -1,0 +1,70 @@
+{
+  "name": "kinopub-tv",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/BladeGTs/kinupub-desktop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BladeGTs/kinupub-desktop.git"
+  },
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "check": "tsc -b && oxlint && oxfmt --check && vitest run && pnpm test:electron",
+    "deploy": "bash ../scripts/deploy.sh",
+    "test": "vitest run",
+    "test:electron": "node --test electron/*.test.cjs",
+    "desktop:dev": "node electron/dev.mjs",
+    "desktop:start": "pnpm build && electron .",
+    "desktop:pack": "pnpm build && electron-builder --dir",
+    "desktop:build": "pnpm build && electron-builder",
+    "desktop:build:win": "pnpm build && electron-builder --win",
+    "desktop:build:linux": "pnpm build && electron-builder --linux",
+    "desktop:build:mac": "pnpm build && electron-builder --mac"
+  },
+  "dependencies": {
+    "@fontsource-variable/golos-text": "^5.3.0",
+    "@fontsource-variable/unbounded": "^5.3.0",
+    "@noriginmedia/norigin-spatial-navigation": "^3.3.0",
+    "@tanstack/query-core": "^5.104.1",
+    "@tanstack/virtual-core": "^3.17.11",
+    "hls.js": "^1.7.3",
+    "mobx": "^6.16.1",
+    "mobx-react-lite": "^4.1.1",
+    "mobx-tanstack-query": "^7.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^7.18.4"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "jsdom": "^29.1.1",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "volta": {
+    "node": "24.18.0",
+    "pnpm": "10.15.0"
+  },
+  "packageManager": "pnpm@10.15.0"
+}

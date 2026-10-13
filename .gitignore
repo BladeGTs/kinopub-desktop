@@ -1,0 +1,17 @@
+node_modules/
+.pnpm-store/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+dist/
+release/
+build/
+*.ipk
+.DS_Store
+*.log
+.claude/
+scripts/tv.conf
+
+# AI assistant artifacts
+context-snapshot.json

@@ -1,0 +1,96 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "unicorn", "import"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-imports": "error",
+    "import/no-cycle": "error",
+    "no-console": "warn",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": "off",
+    "react/no-array-index-key": "off",
+    "no-await-in-loop": "off",
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["__APP_VERSION__"]
+      }
+    ],
+    "@stylistic/padding-line-between-statements": [
+      "warn",
+      {
+        "blankLine": "always",
+        "prev": ["const", "let"],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": ["const", "let"],
+        "next": ["const", "let"]
+      },
+      {
+        "blankLine": "always",
+        "prev": ["if", "block-like"],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": "if",
+        "next": "if"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "return"
+      }
+    ],
+    "@stylistic/lines-between-class-members": [
+      "warn",
+      "always",
+      {
+        "exceptAfterSingleLine": true
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "regex": "^@/features/[^/]+/.+",
+            "message": "Import a feature through its index: @/features/<name>"
+          },
+          {
+            "regex": "^@/shared/ui/[^/]+/.+",
+            "message": "Import a UI module through its index: @/shared/ui/<name>"
+          }
+        ]
+      }
+    ],
+    "unicorn/no-array-sort": "off"
+  },
+  "ignorePatterns": ["dist", "release", "node_modules", "webos"],
+  "jsPlugins": ["@stylistic/eslint-plugin"]
+}

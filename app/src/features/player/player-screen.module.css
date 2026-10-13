@@ -1,0 +1,46 @@
+.hud-open video::-webkit-media-text-track-container {
+  transform: translateY(-340px);
+}
+
+.player-flash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--paper);
+  animation: flash 700ms var(--ease) forwards;
+}
+
+.player-flash svg {
+  width: 64px;
+  height: 64px;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.player-controls {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 0 -26px;
+}
+
+.player-error-actions {
+  display: flex;
+  gap: 16px;
+}

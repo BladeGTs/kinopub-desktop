@@ -1,0 +1,6 @@
+.back {
+  position: absolute;
+  top: 28px;
+  left: calc(var(--rail) + 24px);
+  z-index: 19;
+}

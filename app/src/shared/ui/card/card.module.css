@@ -1,0 +1,154 @@
+.card {
+  flex: none;
+  position: relative;
+}
+
+.card-poster {
+  width: var(--card-w);
+}
+
+.card-wide {
+  width: var(--wide-w);
+}
+
+/*
+ * Scale only the poster, not the caption: re-rasterizing text on every scale step cost the TV dozens of frames.
+ * The poster is kept on its own layer ahead of time.
+ */
+.card-img {
+  position: relative;
+  will-change: transform;
+  transition: transform 160ms var(--ease);
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--smoke);
+}
+
+.card-poster .card-img {
+  height: var(--card-h);
+}
+
+.card-wide .card-img {
+  height: var(--wide-h);
+}
+
+.card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 4px var(--amber);
+  opacity: 0;
+}
+
+.card:global(.is-focused) {
+  z-index: 2;
+}
+
+.card:global(.is-focused) .card-img {
+  transform: scale(1.06);
+}
+
+.card:global(.is-focused) .card-img::after {
+  opacity: 1;
+}
+
+.card-q {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
+.card-ratings {
+  position: absolute;
+  left: 10px;
+  bottom: 14px;
+  display: flex;
+  gap: 6px;
+}
+
+.card-new {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
+.card-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.card-progress > div {
+  height: 100%;
+  background: var(--amber);
+}
+
+.card-title {
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #d4d1ca;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-sub {
+  margin-top: 2px;
+  font-size: 21px;
+  color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card:global(.is-focused) .card-title {
+  color: var(--paper);
+}
+
+/* Top-10: the number sits in the left gutter and tucks under the poster, Netflix-style. */
+.card-ranked {
+  width: calc(var(--card-w) + var(--rank-w));
+  padding-left: var(--rank-w);
+}
+
+.card-ranked .card-img {
+  z-index: 1;
+}
+
+.card-rank {
+  position: absolute;
+  left: 0;
+  bottom: -14px;
+  width: calc(var(--rank-w) + 12px);
+  font-family: var(--font-display);
+  font-size: 200px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-align: right;
+  color: var(--black);
+  -webkit-text-stroke: 4px #5a5d68;
+  transition: -webkit-text-stroke-color 160ms var(--ease);
+}
+
+.card-rank-wide {
+  font-size: 172px;
+  letter-spacing: -0.12em;
+}
+
+.card:global(.is-focused) .card-rank {
+  -webkit-text-stroke-color: var(--amber);
+}

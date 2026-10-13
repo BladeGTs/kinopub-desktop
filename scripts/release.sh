@@ -1,0 +1,29 @@
+#!/bin/bash
+# Stamps all package versions, commits, tags v<version> and pushes.
+# GitHub Actions checks, builds desktop/webOS packages and publishes the release.
+#   bash scripts/release.sh 1.2.2
+set -e
+cd "$(dirname "$0")/.."
+
+VERSION="$1"
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Использование: bash scripts/release.sh <major.minor.patch>" >&2
+  exit 1
+fi
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Рабочее дерево не чистое, закоммитьте или уберите изменения" >&2
+  exit 1
+fi
+if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+  echo "Тег v$VERSION уже есть" >&2
+  exit 1
+fi
+
+node scripts/set-release-version.mjs "$VERSION"
+
+git add app/webos/appinfo.json app/package.json app/electron-builder.yml
+# The file may already carry this version (bumped by hand): then there is nothing to commit, only to tag.
+git diff --cached --quiet || git commit -q -m "chore: bump version to $VERSION"
+git tag "v$VERSION"
+git push origin HEAD "v$VERSION"
+echo "Релиз v$VERSION запущен: https://github.com/BladeGTs/kinupub-desktop/actions"

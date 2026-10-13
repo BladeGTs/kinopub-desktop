@@ -1,0 +1,84 @@
+import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
+import { memo, useState, type CSSProperties, type ReactNode, type HTMLAttributes } from 'react'
+import { observer } from 'mobx-react-lite'
+import { cx } from '@/shared/lib/cx'
+import { useServices } from '@/services/services'
+
+/** Node only: coordinates are read lazily and only navigation needs them. */
+export interface FocusLayout {
+  node: HTMLElement | null
+}
+
+export interface PressableProps extends Pick<
+  HTMLAttributes<HTMLDivElement>,
+  'role' | 'aria-label' | 'aria-expanded' | 'aria-haspopup' | 'aria-selected' | 'aria-checked'
+> {
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
+  focusKey?: string
+  focusable?: boolean
+  onPress?: () => void
+  onFocus?: (layout: FocusLayout) => void
+  onBlur?: () => void
+  /** Return false to block navigation in this direction. */
+  onArrow?: (direction: string) => boolean
+}
+
+/**
+ * norigin registers a focusable once, on mount, and ignores a later change of its key. A list that re-keys its rows
+ * (an item removed, a virtualized cell reused) would keep Enter bound to the old row, so the node remounts per key.
+ */
+export const Pressable = memo(function Pressable(props: PressableProps) {
+  return <PressableNode key={props.focusKey ?? ''} {...props} />
+})
+
+/** The Magic Remote pointer takes focus on hover; mousemove rather than mouseenter, which fires before the pointer is marked as in use. */
+const PressableNode = observer(function PressableNode({
+  children,
+  className,
+  style,
+  focusKey,
+  focusable = true,
+  onPress,
+  onFocus,
+  onBlur,
+  onArrow,
+  ...accessibility
+}: PressableProps) {
+  const { ui } = useServices()
+  const [hovered, setHovered] = useState(false)
+  const { ref, focused, focusSelf } = useFocusable<object, HTMLDivElement>({
+    focusKey,
+    focusable,
+    onEnterPress: onPress ? () => onPress() : undefined,
+    onArrowPress: onArrow ? (direction) => onArrow(direction) : undefined,
+    onFocus: onFocus ? (layout) => onFocus({ node: layout.node as HTMLElement | null }) : undefined,
+    onBlur: onBlur ? () => onBlur() : undefined,
+  })
+
+  return (
+    <div
+      {...accessibility}
+      ref={ref}
+      className={cx(className, focused && (!ui.pointer || hovered) && 'is-focused')}
+      style={style}
+      onMouseMove={() => {
+        setHovered(true)
+        if (ui.pointer && !focused) focusSelf()
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={
+        onPress
+          ? () => {
+              focusSelf()
+              onPress()
+            }
+          : undefined
+      }
+    >
+      {children}
+    </div>
+  )
+})

@@ -1,0 +1,48 @@
+.player-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.82);
+  animation: panel-in 200ms var(--ease);
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.player-panel-columns {
+  display: flex;
+  gap: 120px;
+  max-height: 820px;
+}
+
+.player-panel-column {
+  display: flex;
+  flex-direction: column;
+  width: 640px;
+  min-height: 0;
+}
+
+.player-panel-column h2 {
+  margin-bottom: 24px;
+  padding-left: 26px;
+  font-size: 34px;
+}
+
+.player-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  padding: 6px 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.player-panel-list::-webkit-scrollbar {
+  display: none;
+}
