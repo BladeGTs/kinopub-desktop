@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stamps all package versions, commits, tags v<version> and pushes.
-# GitHub Actions checks, builds desktop/webOS packages and publishes the release.
+# GitHub Actions checks, builds desktop packages and publishes the release.
 #   bash scripts/release.sh 1.2.2
 set -e
 cd "$(dirname "$0")/.."

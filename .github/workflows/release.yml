@@ -1,6 +1,6 @@
 name: Release
 
-# vX.Y.Z releases Windows and Ubuntu installers, plus the existing webOS package.
+# vX.Y.Z releases Windows, Ubuntu and macOS ARM64.
 on:
   push:
     tags: ['v*']
@@ -41,11 +41,17 @@ jobs:
           - os: windows-latest
             platform: windows
             target: --win nsis --x64
-            extension: exe
+            artifacts: app/release/*.exe
           - os: ubuntu-24.04
             platform: ubuntu
             target: --linux deb --x64
-            extension: deb
+            artifacts: app/release/*.deb
+          - os: macos-15
+            platform: macos-arm64
+            target: --mac dmg zip --arm64
+            artifacts: |
+              app/release/*.dmg
+              app/release/*.zip
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -83,41 +89,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y "./${package[0]}"
           test -x /opt/KinoPub/kinopub-tv
+      - name: Validate macOS ARM64 package
+        if: matrix.platform == 'macos-arm64'
+        run: |
+          set -euo pipefail
+          bundle=(app/release/mac-arm64/*.app)
+          test "${#bundle[@]}" -eq 1
+          test "$(plutil -extract CFBundleShortVersionString raw -o - "${bundle[0]}/Contents/Info.plist")" = "${GITHUB_REF_NAME#v}"
+          lipo -archs "${bundle[0]}/Contents/MacOS/KinoPub" | grep -qx arm64
+          codesign --verify --deep --strict --verbose=2 "${bundle[0]}"
       - uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.platform }}
-          path: app/release/*.${{ matrix.extension }}
-          if-no-files-found: error
-
-  webos:
-    needs: check
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-        with:
-          version: 10.15.0
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: app/pnpm-lock.yaml
-      - name: Set all versions from tag
-        run: node scripts/set-release-version.mjs
-      - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile --dir app
-          npm install --global @webos-tools/cli
-      - name: Build webOS package
-        run: bash scripts/package.sh
-      - uses: actions/upload-artifact@v7
-        with:
-          name: release-webos
-          path: build/*.ipk
+          path: ${{ matrix.artifacts }}
           if-no-files-found: error
 
   publish:
-    needs: [desktop, webos]
+    needs: desktop
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -129,7 +117,7 @@ jobs:
           merge-multiple: true
       - name: Generate checksums
         working-directory: packages
-        run: sha256sum *.exe *.deb *.ipk > SHA256SUMS
+        run: sha256sum *.exe *.deb *.dmg *.zip > SHA256SUMS
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

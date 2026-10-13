@@ -25,6 +25,9 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
 mac:
+  artifactName: KinoPub-${version}-macos-${arch}.${ext}
+  identity: '-'
+  hardenedRuntime: false
   icon: electron/icons/icon.icns
   category: public.app-category.entertainment
   target:
