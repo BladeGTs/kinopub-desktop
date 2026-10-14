@@ -7,6 +7,7 @@ import { episodeLabel } from '@/shared/lib/format'
 import { cx } from '@/shared/lib/cx'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
 import { isPlayerSurface } from '@/shared/lib/player-input'
+import { focusPlayerWindow } from '@/shared/lib/player-window-focus'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconNext, IconPause, IconPlay, IconSpark, IconStack, IconSubs, IconFullscreen } from '@/shared/ui/icons'
@@ -67,7 +68,8 @@ const PlayerContent = observer(function PlayerContent() {
     if (!isPlayerSurface(event.target, event.currentTarget) || vm.panel || vm.error || vm.nextUp.visible) return
 
     if (getCurrentFocusKey() !== FOCUS.bar) setFocus(FOCUS.bar)
-    if (document.activeElement !== event.currentTarget) event.currentTarget.focus({ preventScroll: true })
+
+    focusPlayerWindow(event.currentTarget)
   }
 
   useEffect(() => {

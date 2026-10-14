@@ -55,9 +55,34 @@
   margin-bottom: 8px;
 }
 
-.pair-steps b {
+.pair-link {
+  display: inline;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 5px;
   color: var(--amber);
   font-weight: 600;
+}
+
+.pair-link:hover,
+.pair-link:global(.is-focused) {
+  color: var(--paper);
+}
+
+.pair-code[role='button'] {
+  cursor: pointer;
+}
+
+.pair-code[role='button']:hover,
+.pair-code:global(.is-focused) {
+  color: var(--amber);
+}
+
+.pair-copy-hint {
+  min-height: 30px;
+  margin-top: 20px;
+  font-size: 24px;
+  color: var(--amber);
 }
 
 .pair-error {

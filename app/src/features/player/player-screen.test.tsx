@@ -177,12 +177,14 @@ it.each([PlayerScreen, ChannelPlayerScreen])('switches fullscreen on double clic
   const surface = container.firstElementChild!
 
   surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
-  vi.advanceTimersByTime(500)
+  vi.advanceTimersByTime(100)
   surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 2 }))
   surface.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, detail: 2 }))
   vi.advanceTimersByTime(500)
   expect(services.ui.toggleFullscreen).toHaveBeenCalledOnce()
   expect(vm.onSurfaceClick).not.toHaveBeenCalled()
+  surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
+  surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 2 }))
   surface.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, detail: 2 }))
   expect(services.ui.toggleFullscreen).toHaveBeenCalledTimes(2)
   container.querySelector('[aria-label="Назад"]')!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, detail: 2 }))
@@ -195,10 +197,38 @@ it('keeps single mouse click pause and cancels a pending click when leaving the 
 
   surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
   expect(vm.onSurfaceClick).not.toHaveBeenCalled()
-  vi.advanceTimersByTime(600)
+  vi.advanceTimersByTime(249)
+  expect(vm.onSurfaceClick).not.toHaveBeenCalled()
+  vi.advanceTimersByTime(1)
   expect(vm.onSurfaceClick).toHaveBeenCalledOnce()
   surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
   flushSync(() => root.render(null))
   vi.advanceTimersByTime(500)
   expect(vm.onSurfaceClick).toHaveBeenCalledOnce()
+})
+
+it('asks Electron to activate an unfocused window on player hover', () => {
+  const activate = vi.fn().mockResolvedValue(true)
+
+  window.desktop = { toggleFullscreen: vi.fn(), focusPlayerWindow: activate }
+  vi.spyOn(document, 'hasFocus').mockReturnValue(false)
+  try {
+    container.firstElementChild!.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+    expect(activate).toHaveBeenCalledOnce()
+  } finally {
+    delete window.desktop
+  }
+})
+
+it('treats clicks outside the shorter double-click interval as two pause actions', () => {
+  vi.useFakeTimers()
+  const surface = container.firstElementChild!
+
+  surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
+  vi.advanceTimersByTime(300)
+  surface.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 2 }))
+  surface.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, detail: 2 }))
+  vi.advanceTimersByTime(250)
+  expect(vm.onSurfaceClick).toHaveBeenCalledTimes(2)
+  expect(services.ui.toggleFullscreen).not.toHaveBeenCalled()
 })

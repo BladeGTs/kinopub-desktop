@@ -9,10 +9,11 @@ files:
   - electron/preload.cjs
   - electron/proxy.cjs
   - electron/window-policy.cjs
+  - electron/window-focus.cjs
   - electron/icons/icon.png
   - webos/largeIcon-v3.png
 extraMetadata:
-  version: 1.4.13
+  version: 1.4.14
   description: KinoPub desktop client
   author: KinoPub TV contributors
 asar: true

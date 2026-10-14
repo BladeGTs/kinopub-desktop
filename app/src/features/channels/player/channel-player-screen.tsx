@@ -10,6 +10,7 @@ import { Spinner } from '@/shared/ui/spinner'
 import { useServices } from '@/services/services'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
 import { isPlayerSurface } from '@/shared/lib/player-input'
+import { focusPlayerWindow } from '@/shared/lib/player-window-focus'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconPause, IconPlay, IconFullscreen } from '@/shared/ui/icons'
@@ -32,7 +33,8 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
     if (!isPlayerSurface(event.target, event.currentTarget) || vm.error) return
 
     if (getCurrentFocusKey() !== 'CHANNEL-pause') setFocus('CHANNEL-pause')
-    if (document.activeElement !== event.currentTarget) event.currentTarget.focus({ preventScroll: true })
+
+    focusPlayerWindow(event.currentTarget)
   }
 
   useEffect(() => {

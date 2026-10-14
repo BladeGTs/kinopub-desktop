@@ -1,8 +1,9 @@
-const { app, BrowserWindow, Menu, dialog, shell, ipcMain, session, safeStorage } = require('electron')
+const { app, BrowserWindow, Menu, dialog, shell, ipcMain, session, safeStorage, screen, clipboard } = require('electron')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { zoomForSize, canNavigate, externalUrl } = require('./window-policy.cjs')
 const { createProxyController } = require('./proxy.cjs')
+const { focusPlayerWindow } = require('./window-focus.cjs')
 
 const development = !app.isPackaged && process.argv.includes('--dev')
 const entry = development ? 'http://127.0.0.1:5173/' : pathToFileURL(path.join(__dirname, '../dist/index.html')).href
@@ -135,6 +136,18 @@ if (!app.requestSingleInstanceLock()) {
       event.preventDefault()
       if (details.firstAuthAttempt === false) callback()
       else callback(credentials.username, credentials.password)
+    })
+    ipcMain.handle('window:focus-player', (event) => {
+      if (!trusted(event)) return false
+
+      return focusPlayerWindow(mainWindow, app, screen.getCursorScreenPoint())
+    })
+    ipcMain.handle('clipboard:copy-device-code', (event, code) => {
+      if (!trusted(event) || typeof code !== 'string' || !code.length || code.length > 128 || /[\r\n\0]/.test(code)) return false
+
+      clipboard.writeText(code)
+
+      return true
     })
     ipcMain.handle('window:toggle-fullscreen', (event) => {
       if (!trusted(event)) return false
