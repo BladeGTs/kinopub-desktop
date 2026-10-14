@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite'
-import { useEffect } from 'react'
-import { setFocus } from '@noriginmedia/norigin-spatial-navigation'
+import { useEffect, type MouseEvent } from 'react'
+import { getCurrentFocusKey, setFocus } from '@noriginmedia/norigin-spatial-navigation'
 import { useParams } from 'react-router'
 import { cx } from '@/shared/lib/cx'
 import { useViewModel } from '@/shared/view-model/use-view-model'
@@ -9,6 +9,7 @@ import { playerShell as styles } from '@/shared/ui/player-shell'
 import { Spinner } from '@/shared/ui/spinner'
 import { useServices } from '@/services/services'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
+import { isPlayerSurface } from '@/shared/lib/player-input'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconPause, IconPlay, IconFullscreen } from '@/shared/ui/icons'
@@ -26,6 +27,13 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
   const vm = useViewModel((services) => new ChannelPlayerScreenViewModel(services, channelId))
   const channel = vm.channel
   const surfaceClicks = usePlayerClicks(vm.onSurfaceClick, ui.toggleFullscreen)
+  const onPointerMove = (event: MouseEvent<HTMLDivElement>) => {
+    vm.showHud()
+    if (!isPlayerSurface(event.target, event.currentTarget) || vm.error) return
+
+    if (getCurrentFocusKey() !== 'CHANNEL-pause') setFocus('CHANNEL-pause')
+    if (document.activeElement !== event.currentTarget) event.currentTarget.focus({ preventScroll: true })
+  }
 
   useEffect(() => {
     if (!vm.hudVisible || vm.error) return
@@ -36,7 +44,13 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
   }, [vm.hudVisible, vm.error, channel?.id])
 
   return (
-    <div className={cx(styles.player, (vm.hudVisible || vm.error) && styles.cursorVisible)} onMouseMove={vm.showHud} {...surfaceClicks}>
+    <div
+      className={cx(styles.player, (vm.hudVisible || vm.error) && styles.cursorVisible)}
+      tabIndex={-1}
+      onMouseMove={onPointerMove}
+      onMouseEnter={onPointerMove}
+      {...surfaceClicks}
+    >
       {channel && (
         <video
           ref={vm.attach}

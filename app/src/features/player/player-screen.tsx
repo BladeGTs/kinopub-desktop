@@ -1,11 +1,12 @@
-import { setFocus } from '@noriginmedia/norigin-spatial-navigation'
+import { getCurrentFocusKey, setFocus } from '@noriginmedia/norigin-spatial-navigation'
 import { observer } from 'mobx-react-lite'
-import { useEffect } from 'react'
+import { useEffect, type MouseEvent } from 'react'
 import { useLocation, useParams, useSearchParams } from 'react-router'
 import type { QualityPreference } from '@/services/settings/settings.service'
 import { episodeLabel } from '@/shared/lib/format'
 import { cx } from '@/shared/lib/cx'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
+import { isPlayerSurface } from '@/shared/lib/player-input'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconNext, IconPause, IconPlay, IconSpark, IconStack, IconSubs, IconFullscreen } from '@/shared/ui/icons'
@@ -61,6 +62,13 @@ const PlayerContent = observer(function PlayerContent() {
   )
 
   const surfaceClicks = usePlayerClicks(vm.onSurfaceClick, ui.toggleFullscreen)
+  const onPointerMove = (event: MouseEvent<HTMLDivElement>) => {
+    vm.onPointerMove()
+    if (!isPlayerSurface(event.target, event.currentTarget) || vm.panel || vm.error || vm.nextUp.visible) return
+
+    if (getCurrentFocusKey() !== FOCUS.bar) setFocus(FOCUS.bar)
+    if (document.activeElement !== event.currentTarget) event.currentTarget.focus({ preventScroll: true })
+  }
 
   useEffect(() => {
     // The error screen must grab focus, otherwise it stays on the HUD buttons underneath.
@@ -86,7 +94,9 @@ const PlayerContent = observer(function PlayerContent() {
         (vm.hudVisible || vm.nextUp.visible) && styles.hudOpen,
         (vm.hudVisible || vm.panel || vm.error || vm.nextUp.visible) && shell.cursorVisible,
       )}
-      onMouseMove={vm.onPointerMove}
+      tabIndex={-1}
+      onMouseMove={onPointerMove}
+      onMouseEnter={onPointerMove}
       {...surfaceClicks}
     >
       {vm.hasSource && (

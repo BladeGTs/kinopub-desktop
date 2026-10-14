@@ -10,6 +10,7 @@ import { PageHero } from './page-hero/page-hero'
 import { PageContext, type PageContextValue } from '@/shared/ui/page-context'
 import { PageViewModel } from './page.view-model'
 import styles from './page.module.css'
+import { PageBack } from '@/shared/ui/back-button'
 
 export interface PageProps {
   children: ReactNode
@@ -96,9 +97,21 @@ export const Page = observer(function Page({
         focusBoundaryDirections={VERTICAL}
         className={cx(styles.page, hero && styles.pageWithHero, className)}
       >
+        <PageBack />
         {hero && <PageHero title={title} />}
-        <div className={styles.pageViewport} onWheel={(event) => vm.scrollBy(event.deltaY)}>
-          <div className={cx(styles.pageScroll, vm.gliding && styles.isGliding)} style={{ transform: `translateY(-${vm.offset}px)` }}>
+        <div
+          className={styles.pageViewport}
+          onWheel={(event) => {
+            if (event.ctrlKey || event.metaKey) return
+
+            ui.setPointer(true)
+            vm.scrollBy(event.deltaY, event.deltaMode)
+          }}
+        >
+          <div
+            className={cx(styles.pageScroll, vm.gliding && styles.isGliding, vm.wheelScrolling && styles.isWheelScrolling)}
+            style={{ transform: `translateY(-${vm.offset}px)` }}
+          >
             <div className={styles.pageStack} ref={vm.setStack}>
               {children}
             </div>

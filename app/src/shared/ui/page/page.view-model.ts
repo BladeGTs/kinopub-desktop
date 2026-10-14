@@ -2,17 +2,19 @@ import { makeAutoObservable } from 'mobx'
 import { GlideDetector } from '@/shared/ui/motion'
 
 const BOTTOM_PADDING = 60
-/** One Magic Remote wheel notch; the TV reports it as a 100px line step. */
-const WHEEL_STEP = 240
+const WHEEL_LINE_HEIGHT = 16
+const WHEEL_IDLE_MS = 150
 
 export class PageViewModel {
   offset: number
   /** True while an arrow is held: scrolling then moves linearly, in step with key repeats. */
   gliding = false
+  wheelScrolling = false
   /** Deliberately not observable. */
   initialFocusPlaced = false
   private stack: HTMLElement | null = null
   private readonly glide = new GlideDetector()
+  private wheelTimer: number | null = null
 
   constructor(
     private readonly top: number,
@@ -24,9 +26,18 @@ export class PageViewModel {
     private readonly pointer: () => boolean = () => false,
   ) {
     this.offset = initialOffset
-    makeAutoObservable<this, 'stack' | 'top' | 'glide' | 'pinned' | 'pointer'>(
+    makeAutoObservable<this, 'stack' | 'top' | 'glide' | 'pinned' | 'pointer' | 'wheelTimer'>(
       this,
-      { stack: false, top: false, glide: false, viewport: false, pinned: false, pointer: false, initialFocusPlaced: false },
+      {
+        stack: false,
+        top: false,
+        glide: false,
+        viewport: false,
+        pinned: false,
+        pointer: false,
+        wheelTimer: false,
+        initialFocusPlaced: false,
+      },
       { autoBind: true },
     )
   }
@@ -46,6 +57,7 @@ export class PageViewModel {
   reveal(el: HTMLElement | null) {
     if (!el || !this.stack || this.pointer()) return
 
+    this.stopWheelScrolling()
     const elementTop = offsetWithin(el, this.stack)
     const elementBottom = elementTop + el.offsetHeight + BOTTOM_PADDING
     const stackBottom = this.stack.offsetHeight + BOTTOM_PADDING
@@ -64,20 +76,33 @@ export class PageViewModel {
     this.offset = next
   }
 
-  /** Wheel on the Magic Remote: one notch moves the stack by a fixed step, bounded by the content. */
-  scrollBy(delta: number) {
-    if (!this.stack || delta === 0) return
+  /** Keep the OS's trackpad deltas and momentum; normalize non-pixel mouse wheel units. */
+  scrollBy(delta: number, deltaMode = 0) {
+    if (!this.stack || !Number.isFinite(delta) || delta === 0) return
 
     const max = Math.max(0, this.stack.offsetHeight + BOTTOM_PADDING - this.viewport)
-    const next = Math.max(0, Math.min(max, this.offset + Math.sign(delta) * WHEEL_STEP))
+    const pixels = delta * (deltaMode === 1 ? WHEEL_LINE_HEIGHT : deltaMode === 2 ? this.viewport : 1)
+    const next = Math.max(0, Math.min(max, this.offset + pixels))
 
     if (next === this.offset) return
 
     this.gliding = false
+    this.wheelScrolling = true
+    if (this.wheelTimer !== null) clearTimeout(this.wheelTimer)
+
+    this.wheelTimer = window.setTimeout(this.stopWheelScrolling, WHEEL_IDLE_MS)
     this.offset = next
   }
 
+  private stopWheelScrolling() {
+    if (this.wheelTimer !== null) clearTimeout(this.wheelTimer)
+
+    this.wheelTimer = null
+    this.wheelScrolling = false
+  }
+
   dispose() {
+    this.stopWheelScrolling()
     this.stack = null
   }
 }

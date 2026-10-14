@@ -17,7 +17,6 @@ import { People } from './people/people'
 import { Rating } from './rating/rating'
 import styles from './item-screen.module.css'
 import { Badge } from '@/shared/ui/badge'
-import { PageBack } from '@/shared/ui/back-button'
 import { PageTitle } from '@/shared/ui/page-title'
 
 /** «Similar» navigates item to item on the same route: keying by history entry recreates the screen and its view-model. */
@@ -46,9 +45,9 @@ const ItemContent = observer(function ItemContent() {
   return (
     <Page focusKey="PAGE-item" className={styles.item} top={60} initialFocusKey="ITEM-play" ready={!!item}>
       <header className={styles.itemHead}>
-        <PageBack className={styles.itemTitleRow}>
+        <div className={styles.itemTitleRow}>
           <h1 className={styles.itemTitle}>{vm.title.ru}</h1>
-        </PageBack>
+        </div>
         {vm.title.original && <div className={styles.itemTitleOriginal}>{vm.title.original}</div>}
         {item && (
           <div className={styles.itemMeta}>

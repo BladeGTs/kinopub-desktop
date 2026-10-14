@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { PageViewModel } from './page.view-model'
 
 function page(stackHeight: number, viewport = 1080) {
@@ -56,15 +56,36 @@ describe('PageViewModel.reveal near the end', () => {
 })
 
 describe('PageViewModel.scrollBy', () => {
-  it('moves one fixed step per wheel notch regardless of the delta size', () => {
+  it('preserves small trackpad deltas instead of turning every event into a large step', () => {
     const vm = page(5000)
 
     vm.scrollBy(100)
-    expect(vm.offset).toBe(240)
+    expect(vm.offset).toBe(100)
     vm.scrollBy(1)
-    expect(vm.offset).toBe(480)
-    vm.scrollBy(-3000)
-    expect(vm.offset).toBe(240)
+    expect(vm.offset).toBe(101)
+    vm.scrollBy(0.5)
+    expect(vm.offset).toBe(101.5)
+    vm.scrollBy(-1.5)
+    expect(vm.offset).toBe(100)
+    vm.dispose()
+  })
+
+  it('normalizes wheel line/page units and disables animation during a continuous gesture', () => {
+    vi.useFakeTimers()
+    const vm = page(5000)
+
+    vm.scrollBy(3, 1)
+    expect(vm.offset).toBe(48)
+    vm.scrollBy(1, 2)
+    expect(vm.offset).toBe(1128)
+    expect(vm.wheelScrolling).toBe(true)
+    vi.advanceTimersByTime(100)
+    vm.scrollBy(2)
+    vi.advanceTimersByTime(100)
+    expect(vm.wheelScrolling).toBe(true)
+    vi.advanceTimersByTime(100)
+    expect(vm.wheelScrolling).toBe(false)
+    vm.dispose()
   })
 
   it('stays within the content and ignores zero deltas', () => {
@@ -72,12 +93,11 @@ describe('PageViewModel.scrollBy', () => {
 
     vm.scrollBy(-100)
     expect(vm.offset).toBe(0)
-    vm.scrollBy(100)
-    vm.scrollBy(100)
-    vm.scrollBy(100)
+    vm.scrollBy(1000)
     expect(vm.offset).toBe(1500 + 60 - 1080)
     vm.scrollBy(0)
     expect(vm.offset).toBe(1500 + 60 - 1080)
+    vm.dispose()
   })
 
   it('does nothing for content that fits or without a stack', () => {

@@ -6,7 +6,6 @@ import { SEARCH_INPUT_FOCUS_KEY, SearchInput } from './search-input/search-input
 import { SearchScreenViewModel } from './search-screen.view-model'
 import styles from './search-screen.module.css'
 import { Empty } from '@/shared/ui/empty'
-import { PageBack } from '@/shared/ui/back-button'
 
 const GRID_FOCUS_KEY = 'GRID-search'
 
@@ -15,9 +14,9 @@ export const SearchScreen = observer(function SearchScreen() {
 
   return (
     <Page focusKey="PAGE-search" initialFocusKey={SEARCH_INPUT_FOCUS_KEY}>
-      <PageBack className={styles.searchBox}>
+      <div className={styles.searchBox}>
         <SearchInput value={vm.query} onChange={vm.setQuery} resultsFocusKey={vm.list.length ? GRID_FOCUS_KEY : undefined} />
-      </PageBack>
+      </div>
       {!vm.results.isFetched && !vm.results.isFetching && (
         <div className={styles.searchHint}>
           Нажмите ОК, чтобы открыть клавиатуру, или микрофон на пульте, чтобы продиктовать. Результаты появляются по мере ввода.

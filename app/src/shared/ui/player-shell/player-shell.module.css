@@ -1,5 +1,6 @@
 /* Fullscreen video, HUD gradient, dock and error card shared by the item player and the TV channel player. */
 .player {
+  outline: none;
   cursor: none;
   position: absolute;
   inset: 0;

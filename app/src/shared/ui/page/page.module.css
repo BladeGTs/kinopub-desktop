@@ -30,6 +30,10 @@
   transition-timing-function: linear;
 }
 
+.page-scroll.is-wheel-scrolling {
+  transition: none;
+}
+
 .page-stack {
   position: absolute;
   left: 0;

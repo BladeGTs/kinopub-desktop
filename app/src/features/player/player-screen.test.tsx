@@ -140,6 +140,29 @@ it('places keyboard focus on the channel pause button when controls appear', () 
   expect(setFocus).toHaveBeenCalledWith('CHANNEL-pause')
 })
 
+it('restores keyboard and seek-bar focus by hovering the player surface without a click', () => {
+  vi.mocked(setFocus).mockClear()
+  const surface = container.firstElementChild as HTMLElement
+
+  surface.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+  expect(setFocus).toHaveBeenCalledWith('PLAYER-bar')
+  expect(document.activeElement).toBe(surface)
+  expect(vm.onSurfaceClick).not.toHaveBeenCalled()
+})
+
+it('does not steal seek-bar focus when hovering controls or while a player panel is open', () => {
+  vi.mocked(setFocus).mockClear()
+  container.querySelector('[aria-label="Назад"]')!.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+  expect(setFocus).not.toHaveBeenCalled()
+  Object.assign(vm, { panel: 'episodes' })
+  try {
+    container.firstElementChild!.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+    expect(setFocus).not.toHaveBeenCalled()
+  } finally {
+    vm.panel = null
+  }
+})
+
 it.each([PlayerScreen, ChannelPlayerScreen])('switches fullscreen on double click without pausing (%s)', (Screen) => {
   vi.useFakeTimers()
   flushSync(() =>

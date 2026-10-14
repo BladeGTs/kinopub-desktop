@@ -5,6 +5,7 @@ import type { Location } from 'react-router'
 import { ServicesContext } from '@/services/services'
 import { fakeServices } from '@/test/fake-services'
 import { PageTitle } from '@/shared/ui/page-title'
+import { PageBack } from './page-back'
 
 vi.mock('@noriginmedia/norigin-spatial-navigation', () => ({
   useFocusable: () => ({ ref: { current: null }, focused: false, focusSelf: vi.fn() }),
@@ -19,7 +20,7 @@ afterEach(() => {
   container?.remove()
 })
 
-it.each(['/settings', '/channels', '/item/42'])('places an icon-only Back beside the heading on %s', (pathname) => {
+it.each(['/settings', '/channels', '/item/42'])('keeps icon-only Back independent of the heading on %s', (pathname) => {
   const services = fakeServices()
   const back = vi.fn(() => true)
 
@@ -30,6 +31,7 @@ it.each(['/settings', '/channels', '/item/42'])('places an icon-only Back beside
   flushSync(() =>
     root!.render(
       <ServicesContext.Provider value={services}>
+        <PageBack />
         <PageTitle>Заголовок</PageTitle>
       </ServicesContext.Provider>,
     ),
@@ -39,7 +41,7 @@ it.each(['/settings', '/channels', '/item/42'])('places an icon-only Back beside
   expect(button.getAttribute('role')).toBe('button')
   expect(button.querySelector('svg')).not.toBeNull()
   expect(button.textContent).toBe('')
-  expect(button.parentElement?.parentElement?.contains(container.querySelector('h1'))).toBe(true)
+  expect(button.parentElement?.contains(container.querySelector('h1'))).toBe(false)
   button.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   expect(back).toHaveBeenCalledOnce()
 })
@@ -52,6 +54,7 @@ it('keeps the home heading without a Back button', () => {
   flushSync(() =>
     root!.render(
       <ServicesContext.Provider value={services}>
+        <PageBack />
         <PageTitle>Главная</PageTitle>
       </ServicesContext.Provider>,
     ),
