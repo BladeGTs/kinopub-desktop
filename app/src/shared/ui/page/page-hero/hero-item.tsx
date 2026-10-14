@@ -3,6 +3,7 @@ import { formatRating, qualityBadge, splitTitle } from '@/shared/lib/format'
 import { IconStar } from '@/shared/ui/icons'
 import { Badge } from '@/shared/ui/badge'
 import styles from './page-hero.module.css'
+import { PageBack } from '@/shared/ui/back-button'
 
 export function HeroItem({ item, note }: { item: ItemShort; note?: string }) {
   const { ru, original } = splitTitle(item.title)
@@ -17,7 +18,9 @@ export function HeroItem({ item, note }: { item: ItemShort; note?: string }) {
 
   return (
     <>
-      <h1 className={styles.pageHeroTitle}>{ru}</h1>
+      <PageBack>
+        <h1 className={styles.pageHeroTitle}>{ru}</h1>
+      </PageBack>
       {original && <div className={styles.pageHeroOriginal}>{original}</div>}
       <div className={styles.pageHeroMeta}>
         {note && <span className={styles.pageHeroNote}>{note}</span>}

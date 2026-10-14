@@ -1,4 +1,6 @@
 .title {
   margin: 56px var(--gutter) 28px;
+}
+.text {
   font-size: 52px;
 }

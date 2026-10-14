@@ -66,7 +66,7 @@ export const SettingsScreen = observer(function SettingsScreen() {
         <ProxySettings />
         <Setting name="Выйти из аккаунта" description="Понадобится заново ввести код устройства" value="" onPress={vm.logout} />
       </List>
-      <div className={styles.settingsVersion}>Кинопаб TV {vm.version}</div>
+      <div className={styles.settingsVersion}>KinoPub Desktop {vm.version}</div>
     </Page>
   )
 })

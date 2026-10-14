@@ -7,8 +7,10 @@
   padding: 90px var(--gutter) 0;
 }
 
-.item-title {
+.item-title-row {
   margin-bottom: 8px;
+}
+.item-title {
   font-size: 64px;
   line-height: 1.05;
 }

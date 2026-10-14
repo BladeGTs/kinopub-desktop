@@ -17,6 +17,8 @@ import { People } from './people/people'
 import { Rating } from './rating/rating'
 import styles from './item-screen.module.css'
 import { Badge } from '@/shared/ui/badge'
+import { PageBack } from '@/shared/ui/back-button'
+import { PageTitle } from '@/shared/ui/page-title'
 
 /** «Similar» navigates item to item on the same route: keying by history entry recreates the screen and its view-model. */
 export function ItemScreen() {
@@ -35,6 +37,7 @@ const ItemContent = observer(function ItemContent() {
   if (!item && vm.item.error) {
     return (
       <Page focusKey="PAGE-item" initialFocusKey="ITEM-retry">
+        <PageTitle>Просмотр</PageTitle>
         <Status error={vm.item.error.message} onRetry={() => vm.item.refetch()} retryFocusKey="ITEM-retry" />
       </Page>
     )
@@ -43,7 +46,9 @@ const ItemContent = observer(function ItemContent() {
   return (
     <Page focusKey="PAGE-item" className={styles.item} top={60} initialFocusKey="ITEM-play" ready={!!item}>
       <header className={styles.itemHead}>
-        <h1 className={styles.itemTitle}>{vm.title.ru}</h1>
+        <PageBack className={styles.itemTitleRow}>
+          <h1 className={styles.itemTitle}>{vm.title.ru}</h1>
+        </PageBack>
         {vm.title.original && <div className={styles.itemTitleOriginal}>{vm.title.original}</div>}
         {item && (
           <div className={styles.itemMeta}>

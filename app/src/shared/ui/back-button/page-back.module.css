@@ -1,0 +1,10 @@
+.anchor {
+  position: relative;
+}
+.back {
+  position: absolute;
+  left: -64px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+}

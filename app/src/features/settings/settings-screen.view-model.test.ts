@@ -22,6 +22,18 @@ describe('SettingsScreenViewModel', () => {
     expect(vm.subscriptionLine).toBe('')
   })
 
+  it('shows the installed desktop version rather than the web build fallback', () => {
+    window.desktop = { toggleFullscreen: vi.fn(), runtime: { platform: 'linux', arch: 'x64', electron: '44.7.0', appVersion: '2.3.4' } }
+
+    try {
+      expect(vm.version).toBe('2.3.4')
+    } finally {
+      delete window.desktop
+    }
+
+    expect(vm.version).toBe('test')
+  })
+
   it('cycles quality and stream in both directions, wrapping around', () => {
     vm.cycleQuality()
     expect(vm.values.quality).toBe('max')

@@ -17,11 +17,14 @@ function classicScript(): Plugin {
   }
 }
 
-const appinfo = JSON.parse(readFileSync(new URL('./webos/appinfo.json', import.meta.url), 'utf8'))
+const desktopConfig = readFileSync(new URL('./electron-builder.yml', import.meta.url), 'utf8')
+const appVersion = desktopConfig.match(/extraMetadata:\r?\n\s{2}version:\s*([^\s]+)/)?.[1]
+
+if (!appVersion) throw new Error('Missing desktop application version')
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(appinfo.version) },
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   plugins: [react(), classicScript()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

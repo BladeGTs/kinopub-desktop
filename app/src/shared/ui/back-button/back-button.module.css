@@ -1,9 +1,22 @@
 .back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
   height: 48px;
-  padding: 0 16px;
-  gap: 10px;
-  border-radius: 24px;
-  font-size: 22px;
+  border-radius: 50%;
+  background: var(--smoke);
+  color: var(--paper);
+  transition:
+    background 120ms var(--ease),
+    color 120ms var(--ease),
+    transform 160ms var(--ease);
+}
+.back:global(.is-focused) {
+  background: var(--amber);
+  color: var(--amber-ink);
+  transform: scale(1.04);
 }
 .back svg {
   width: 24px;

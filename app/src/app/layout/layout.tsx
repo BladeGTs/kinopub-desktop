@@ -7,8 +7,6 @@ import { LayoutViewModel } from './layout.view-model'
 import { Rail } from './rail/rail'
 import { Toast } from './toast/toast'
 import { Spinner } from '@/shared/ui/spinner'
-import { BackButton } from '@/shared/ui/back-button'
-import styles from './layout.module.css'
 
 export const Layout = observer(function Layout() {
   const vm = useViewModel((services) => new LayoutViewModel(services))
@@ -22,11 +20,6 @@ export const Layout = observer(function Layout() {
     <>
       {!vm.isFullscreen && <Backdrop />}
       {!vm.isFullscreen && <Rail />}
-      {vm.showBack && (
-        <div className={styles.back}>
-          <BackButton focusKey="APP-back" />
-        </div>
-      )}
       <Outlet />
       <Toast />
     </>

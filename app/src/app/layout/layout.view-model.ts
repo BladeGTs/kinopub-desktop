@@ -24,10 +24,6 @@ export class LayoutViewModel {
     return FULLSCREEN_PATTERN.test(this.services.router.pathname)
   }
 
-  get showBack() {
-    return !this.isFullscreen && this.services.router.pathname !== link.home()
-  }
-
   get authStatus() {
     return this.services.auth.status
   }

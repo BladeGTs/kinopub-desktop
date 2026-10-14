@@ -61,7 +61,7 @@ export class SettingsScreenViewModel {
   }
 
   get version() {
-    return __APP_VERSION__
+    return window.desktop?.runtime?.appVersion ?? __APP_VERSION__
   }
 
   cycleQuality(direction: 1 | -1 = 1) {
