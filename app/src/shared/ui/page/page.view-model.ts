@@ -4,6 +4,7 @@ import { GlideDetector } from '@/shared/ui/motion'
 const BOTTOM_PADDING = 60
 const WHEEL_LINE_HEIGHT = 16
 const WHEEL_IDLE_MS = 150
+const WHEEL_SMOOTH_MS = 45
 
 export class PageViewModel {
   offset: number
@@ -15,6 +16,9 @@ export class PageViewModel {
   private stack: HTMLElement | null = null
   private readonly glide = new GlideDetector()
   private wheelTimer: number | null = null
+  private wheelFrame: number | null = null
+  private wheelFrameAt = 0
+  private animatedOffset: number
 
   constructor(
     private readonly top: number,
@@ -26,7 +30,8 @@ export class PageViewModel {
     private readonly pointer: () => boolean = () => false,
   ) {
     this.offset = initialOffset
-    makeAutoObservable<this, 'stack' | 'top' | 'glide' | 'pinned' | 'pointer' | 'wheelTimer'>(
+    this.animatedOffset = initialOffset
+    makeAutoObservable<this, 'stack' | 'top' | 'glide' | 'pinned' | 'pointer' | 'wheelTimer' | 'wheelFrame' | 'wheelFrameAt'>(
       this,
       {
         stack: false,
@@ -36,6 +41,8 @@ export class PageViewModel {
         pinned: false,
         pointer: false,
         wheelTimer: false,
+        wheelFrame: false,
+        wheelFrameAt: false,
         initialFocusPlaced: false,
       },
       { autoBind: true },
@@ -44,6 +51,11 @@ export class PageViewModel {
 
   markInitialFocusPlaced() {
     this.initialFocusPlaced = true
+  }
+
+  /** Logical offset accumulates every delta; the rendered offset approaches it each frame. */
+  get scrollOffset() {
+    return this.wheelScrolling ? this.animatedOffset : this.offset
   }
 
   setStack(el: HTMLElement | null) {
@@ -87,17 +99,42 @@ export class PageViewModel {
     if (next === this.offset) return
 
     this.gliding = false
+    if (!this.wheelScrolling) this.animatedOffset = this.offset
+
     this.wheelScrolling = true
     if (this.wheelTimer !== null) clearTimeout(this.wheelTimer)
 
-    this.wheelTimer = window.setTimeout(this.stopWheelScrolling, WHEEL_IDLE_MS)
+    this.wheelTimer = window.setTimeout(() => {
+      this.wheelTimer = null
+      if (this.wheelFrame === null) this.stopWheelScrolling()
+    }, WHEEL_IDLE_MS)
     this.offset = next
+    if (this.wheelFrame === null) {
+      this.wheelFrameAt = performance.now()
+      this.wheelFrame = window.requestAnimationFrame(this.animateWheel)
+    }
+  }
+
+  private animateWheel(now: number) {
+    const elapsed = Math.max(0, now - this.wheelFrameAt)
+
+    this.wheelFrameAt = now
+    this.animatedOffset += (this.offset - this.animatedOffset) * (1 - Math.exp(-elapsed / WHEEL_SMOOTH_MS))
+    if (Math.abs(this.offset - this.animatedOffset) < 0.25) {
+      this.animatedOffset = this.offset
+      this.wheelFrame = null
+      if (this.wheelTimer === null) this.stopWheelScrolling()
+    } else {
+      this.wheelFrame = window.requestAnimationFrame(this.animateWheel)
+    }
   }
 
   private stopWheelScrolling() {
     if (this.wheelTimer !== null) clearTimeout(this.wheelTimer)
+    if (this.wheelFrame !== null) window.cancelAnimationFrame(this.wheelFrame)
 
     this.wheelTimer = null
+    this.wheelFrame = null
     this.wheelScrolling = false
   }
 

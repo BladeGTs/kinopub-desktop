@@ -110,7 +110,7 @@ export const Page = observer(function Page({
         >
           <div
             className={cx(styles.pageScroll, vm.gliding && styles.isGliding, vm.wheelScrolling && styles.isWheelScrolling)}
-            style={{ transform: `translateY(-${vm.offset}px)` }}
+            style={{ transform: `translateY(-${vm.scrollOffset}px)` }}
           >
             <div className={styles.pageStack} ref={vm.setStack}>
               {children}

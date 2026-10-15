@@ -11,13 +11,11 @@ export interface RowParams {
   saveOffset: (offset: number) => void
   images: ImageService
   imageOf?: (index: number) => string | undefined
-  /** Focus taken by the Magic Remote pointer must not scroll; the edge zones scroll instead. */
+  /** Focus taken by the Magic Remote pointer must not scroll; the arrow buttons scroll instead. */
   pointer?: () => boolean
 }
 
 const IMAGE_AHEAD = 4
-/** Resting the pointer on an edge zone moves the row one card per this interval. */
-const EDGE_INTERVAL_MS = 360
 
 export class RowViewModel {
   offset: number
@@ -31,7 +29,6 @@ export class RowViewModel {
   private readonly saveOffset: (offset: number) => void
   private readonly stopPrefetch: () => void
   private readonly pointer: () => boolean
-  private edgeTimer: number | null = null
 
   constructor({ count, width, initialOffset, saveOffset, images, imageOf, pointer = () => false }: RowParams) {
     this.count = count
@@ -39,9 +36,9 @@ export class RowViewModel {
     this.pointer = pointer
     this.step = width + CARD_GAP
     this.offset = initialOffset
-    makeAutoObservable<this, 'step' | 'saveOffset' | 'stopPrefetch' | 'glide' | 'pointer' | 'edgeTimer'>(
+    makeAutoObservable<this, 'step' | 'saveOffset' | 'stopPrefetch' | 'glide' | 'pointer'>(
       this,
-      { list: false, root: false, step: false, saveOffset: false, stopPrefetch: false, glide: false, pointer: false, edgeTimer: false },
+      { list: false, root: false, step: false, saveOffset: false, stopPrefetch: false, glide: false, pointer: false },
       { autoBind: true },
     )
     this.list = new VirtualList({
@@ -108,19 +105,7 @@ export class RowViewModel {
     this.offset = next
   }
 
-  /** Pointer resting on an edge zone: step now, then not again until the interval has passed. */
-  edgeHover(direction: -1 | 1) {
-    if (this.edgeTimer) return
-
-    this.scrollStep(direction)
-    this.edgeTimer = window.setTimeout(() => {
-      this.edgeTimer = null
-    }, EDGE_INTERVAL_MS)
-  }
-
   dispose() {
-    if (this.edgeTimer) clearTimeout(this.edgeTimer)
-
     this.stopPrefetch()
     this.saveOffset(this.offset)
     this.list.dispose()

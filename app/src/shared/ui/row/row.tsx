@@ -4,6 +4,7 @@ import { itemFocusKey, rowNavigation } from '@/shared/lib/index-navigation'
 import { cx } from '@/shared/lib/cx'
 import { useViewModel } from '@/shared/view-model/use-view-model'
 import { FocusGroup } from '@/shared/ui/focus'
+import { IconChevronDown } from '@/shared/ui/icons'
 import { usePage } from '@/shared/ui/page'
 import { RowViewModel } from './row.view-model'
 import styles from './row.module.css'
@@ -58,9 +59,32 @@ export const Row = observer(function Row({ focusKey, title, count, item, renderI
             ))}
           </div>
         </FocusGroup>
-        {/* Pointer scrolling: resting the cursor near either edge moves the row, as on Netflix. Outside the viewport: its clip-path would swallow the hover. */}
-        <div className={cx(styles.rowEdge, styles.rowEdgeLeft)} onMouseMove={() => vm.edgeHover(-1)} />
-        <div className={cx(styles.rowEdge, styles.rowEdgeRight)} onMouseMove={() => vm.edgeHover(1)} />
+        {vm.maxOffset > 0 && (
+          <div className={styles.rowArrows} style={{ height: item.height }}>
+            <button
+              type="button"
+              tabIndex={-1}
+              className={cx(styles.rowArrow, styles.rowArrowLeft)}
+              aria-label={`${title ?? 'Карусель'}: прокрутить влево`}
+              disabled={vm.offset <= 0}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => vm.scrollStep(-1)}
+            >
+              <IconChevronDown />
+            </button>
+            <button
+              type="button"
+              tabIndex={-1}
+              className={cx(styles.rowArrow, styles.rowArrowRight)}
+              aria-label={`${title ?? 'Карусель'}: прокрутить вправо`}
+              disabled={vm.offset >= vm.maxOffset}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => vm.scrollStep(1)}
+            >
+              <IconChevronDown />
+            </button>
+          </div>
+        )}
       </div>
     </RowItemFocusContext.Provider>
   )

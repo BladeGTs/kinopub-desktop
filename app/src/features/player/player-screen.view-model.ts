@@ -672,7 +672,12 @@ export class PlayerScreenViewModel {
   private commitSeek() {
     const el = this.element
 
-    if (el && this.seekPreview !== null) el.currentTime = this.seekPreview
+    if (el && this.seekPreview !== null) {
+      el.currentTime = this.seekPreview
+      // Keep the HUD at the committed position before the next asynchronous timeupdate.
+      this.time = el.currentTime
+      this.position = el.currentTime
+    }
 
     this.seekPreview = null
     this.seekStep = SEEK_STEP_MIN

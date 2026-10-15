@@ -56,6 +56,42 @@ describe('PageViewModel.reveal near the end', () => {
 })
 
 describe('PageViewModel.scrollBy', () => {
+  it('animates a wheel notch over frames without losing accumulated trackpad deltas', () => {
+    vi.useFakeTimers()
+    const vm = page(5000)
+
+    vm.scrollBy(100)
+    expect(vm.scrollOffset).toBe(0)
+    vi.advanceTimersByTime(32)
+    const firstFrame = vm.scrollOffset
+
+    expect(firstFrame).toBeGreaterThan(0)
+    expect(firstFrame).toBeLessThan(100)
+    vm.scrollBy(0.5)
+    vm.scrollBy(1.5)
+    expect(vm.offset).toBe(102)
+    vi.advanceTimersByTime(32)
+    expect(vm.scrollOffset).toBeGreaterThan(firstFrame)
+    expect(vm.scrollOffset).toBeLessThan(102)
+    vi.advanceTimersByTime(600)
+    expect(vm.scrollOffset).toBe(102)
+    expect(vm.wheelScrolling).toBe(false)
+    vm.dispose()
+  })
+
+  it('cancels animated wheel movement when the page is disposed', () => {
+    vi.useFakeTimers()
+    const vm = page(5000)
+
+    vm.scrollBy(100)
+    vm.dispose()
+    const offset = vm.scrollOffset
+
+    vi.advanceTimersByTime(600)
+    expect(vm.scrollOffset).toBe(offset)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it('preserves small trackpad deltas instead of turning every event into a large step', () => {
     const vm = page(5000)
 
@@ -70,7 +106,7 @@ describe('PageViewModel.scrollBy', () => {
     vm.dispose()
   })
 
-  it('normalizes wheel line/page units and disables animation during a continuous gesture', () => {
+  it('normalizes wheel line/page units and finishes frame animation after a continuous gesture', () => {
     vi.useFakeTimers()
     const vm = page(5000)
 
@@ -84,6 +120,7 @@ describe('PageViewModel.scrollBy', () => {
     vi.advanceTimersByTime(100)
     expect(vm.wheelScrolling).toBe(true)
     vi.advanceTimersByTime(100)
+    vi.advanceTimersByTime(300)
     expect(vm.wheelScrolling).toBe(false)
     vm.dispose()
   })

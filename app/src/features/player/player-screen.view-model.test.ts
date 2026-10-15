@@ -365,6 +365,29 @@ describe('PlayerScreenViewModel', () => {
       vi.advanceTimersByTime(1)
       expect(el.currentTime).toBe(110)
       expect(vm.seekPreview).toBeNull()
+      expect(vm.shownTime).toBe(110)
+      el.fire('durationchange')
+      expect(vm.progress).toBeCloseTo((110 / 2400) * 100)
+    })
+
+    it('keeps the clicked and relative seek positions stable before the next timeupdate', async () => {
+      const { vm, el } = await setup()
+
+      el.currentTime = 100
+      el.duration = 2400
+      el.fire('timeupdate')
+      vm.seekToFraction(0.5)
+      expect(vm.shownTime).toBe(1200)
+      vi.advanceTimersByTime(500)
+      expect(vm.shownTime).toBe(1200)
+      vm.seekBy(-10)
+      vi.advanceTimersByTime(500)
+      expect(vm.shownTime).toBe(1190)
+      vm.seekBy(10)
+      vi.advanceTimersByTime(500)
+      expect(vm.shownTime).toBe(1200)
+      el.fire('timeupdate')
+      expect(vm.shownTime).toBe(1200)
     })
 
     it('seekToFraction jumps to the clicked share of the video and clamps', async () => {
