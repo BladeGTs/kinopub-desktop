@@ -205,6 +205,41 @@ describe('ItemScreenViewModel', () => {
     vm.dispose()
   })
 
+  it('continues season two even when season one has no watched marks', async () => {
+    const item = serial()
+
+    for (const episode of item.seasons![0].episodes) episode.watched = 0
+    const vm = await load(item)
+
+    expect(vm.next).toMatchObject({ video: { id: 22 }, season: 2, resumeFrom: 600 })
+    expect(vm.seasonIndex).toBe(1)
+    vm.play(vm.next!)
+    expect(navigate).toHaveBeenLastCalledWith('/item/1/play/22?t=600')
+    vm.dispose()
+  })
+
+  it('continues after the latest watched episode rather than going back to an unmarked season', async () => {
+    const item = serial()
+
+    for (const episode of item.seasons![0].episodes) episode.watched = 0
+    item.seasons![1].episodes[1].watching.time = 0
+    const vm = await load(item)
+
+    expect(vm.next).toMatchObject({ video: { id: 22 }, season: 2, resumeFrom: 0 })
+    vm.dispose()
+  })
+
+  it('keeps a newly started season selected even before the resume-time threshold', async () => {
+    const item = serial()
+
+    for (const entry of item.seasons!) for (const episode of entry.episodes) episode.watched = 0
+    item.seasons![1].episodes[1].watching.time = 30
+    const vm = await load(item)
+
+    expect(vm.next).toMatchObject({ video: { id: 22 }, season: 2, resumeFrom: 0 })
+    vm.dispose()
+  })
+
   it('navigates to the player for episodes and trailers', async () => {
     const vm = await load(serial())
     const episode = vm.data!.seasons![1].episodes[1]

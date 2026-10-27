@@ -102,13 +102,7 @@ const ItemContent = observer(function ItemContent() {
       {vm.isSerial && (
         <FocusGroup reveal focusKey="ITEM-seasons" className={styles.itemSeasons}>
           {vm.seasons.map((season, index) => (
-            <Button
-              key={season.id}
-              size="sm"
-              active={index === vm.seasonIndex}
-              onPress={() => vm.selectSeason(index)}
-              onFocus={() => vm.selectSeason(index)}
-            >
+            <Button key={season.id} size="sm" active={index === vm.seasonIndex} onPress={() => vm.selectSeason(index)}>
               {season.title || `Сезон ${season.number}`}
             </Button>
           ))}

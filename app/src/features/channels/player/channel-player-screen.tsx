@@ -11,6 +11,7 @@ import { useServices } from '@/services/services'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
 import { isPlayerSurface } from '@/shared/lib/player-input'
 import { focusPlayerWindow } from '@/shared/lib/player-window-focus'
+import { PlayerVolume, usePlayerVolume } from '@/shared/ui/player-volume'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconPause, IconPlay, IconFullscreen } from '@/shared/ui/icons'
@@ -27,6 +28,7 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
   const { ui } = useServices()
   const vm = useViewModel((services) => new ChannelPlayerScreenViewModel(services, channelId))
   const channel = vm.channel
+  const volume = usePlayerVolume(vm.attach)
   const surfaceClicks = usePlayerClicks(vm.onSurfaceClick, ui.toggleFullscreen)
   const onPointerMove = (event: MouseEvent<HTMLDivElement>) => {
     vm.showHud()
@@ -55,7 +57,7 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
     >
       {channel && (
         <video
-          ref={vm.attach}
+          ref={volume.attach}
           autoPlay
           playsInline
           onPlay={vm.onPlay}
@@ -85,6 +87,7 @@ const ChannelPlayerContent = observer(function ChannelPlayerContent({ channelId 
             <Button focusKey="CHANNEL-pause" icon={vm.playing ? <IconPause /> : <IconPlay />} onPress={vm.togglePlay}>
               {vm.playing ? 'Пауза' : 'Продолжить'}
             </Button>
+            <PlayerVolume controller={volume} focusKey="CHANNEL-volume" active={vm.hudVisible && !vm.error} />
             <div className={styles.playerFullscreen}>
               <Button focusKey="CHANNEL-fullscreen" icon={<IconFullscreen />} onPress={ui.toggleFullscreen}>
                 Полный экран

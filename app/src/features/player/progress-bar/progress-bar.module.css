@@ -73,3 +73,27 @@
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+
+.hover-marker {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  background: var(--mute);
+  pointer-events: none;
+}
+
+.hover-time {
+  position: absolute;
+  bottom: 28px;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--smoke);
+  color: var(--mute);
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}

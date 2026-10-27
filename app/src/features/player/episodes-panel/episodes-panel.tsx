@@ -52,11 +52,10 @@ export const EpisodesPanel = observer(function EpisodesPanel({ player }: { playe
                 variant="list"
                 focusKey={seasonKey(index)}
                 active={index === vm.seasonIndex}
-                onFocus={(layout) => {
-                  revealCentered(layout)
+                onFocus={revealCentered}
+                onPress={() => {
                   vm.selectSeason(index)
                 }}
-                onPress={() => setFocus(episodeKey((vm.videos[vm.preferredIndex] ?? vm.videos[0]).id))}
               >
                 Сезон {season.number}
               </Button>

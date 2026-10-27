@@ -216,15 +216,14 @@ export class ItemScreenViewModel {
 
     if (!item) return null
     if (item.seasons?.length) {
-      for (const season of item.seasons) {
-        for (const episode of season.episodes)
-          if (episode.watched !== 1) return { video: episode, season: season.number, resumeFrom: resumePoint(episode) }
-      }
+      const episodes = [...item.seasons]
+        .sort((a, b) => a.number - b.number)
+        .flatMap((season) => [...season.episodes].sort((a, b) => a.number - b.number).map((video) => ({ video, season: season.number })))
+      // Earlier seasons may have no watched marks when viewing started on another device.
+      const started = episodes.findLastIndex(({ video }) => video.watched === 1 || (video.watching?.time ?? 0) > 0)
+      const next = episodes.slice(Math.max(0, started)).find(({ video }) => video.watched !== 1) ?? episodes.at(-1)
 
-      const last = item.seasons[item.seasons.length - 1]
-      const video = last.episodes[last.episodes.length - 1]
-
-      return { video, season: last.number, resumeFrom: 0 }
+      return next ? { ...next, resumeFrom: resumePoint(next.video) } : null
     }
 
     const video = item.videos?.find((v) => v.watched !== 1) ?? item.videos?.[0]

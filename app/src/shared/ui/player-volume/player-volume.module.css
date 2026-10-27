@@ -1,0 +1,80 @@
+.volume {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.button svg {
+  width: 32px;
+  height: 32px;
+}
+
+.button:hover,
+.button:global(.is-focused) {
+  background: var(--paper);
+  color: var(--black);
+}
+
+.muted::after {
+  content: '';
+  position: absolute;
+  width: 36px;
+  height: 3px;
+  transform: rotate(-45deg);
+  background: currentColor;
+}
+
+.popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 12px;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.popup.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.slider-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 12px;
+  border: 1px solid var(--ash);
+  border-radius: 24px;
+  background: var(--smoke);
+}
+
+.slider-body input {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 28px;
+  height: 150px;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+.slider-body output {
+  min-width: 52px;
+  color: var(--paper);
+  text-align: center;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}

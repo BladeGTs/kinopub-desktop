@@ -13,7 +13,7 @@ files:
   - electron/icons/icon.png
   - webos/largeIcon-v3.png
 extraMetadata:
-  version: 1.4.15
+  version: 1.4.16
   description: KinoPub desktop client
   author: KinoPub TV contributors
 asar: true

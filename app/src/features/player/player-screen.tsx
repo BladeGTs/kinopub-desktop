@@ -8,6 +8,7 @@ import { cx } from '@/shared/lib/cx'
 import { usePlayerClicks } from '@/shared/lib/use-player-clicks'
 import { isPlayerSurface } from '@/shared/lib/player-input'
 import { focusPlayerWindow } from '@/shared/lib/player-window-focus'
+import { PlayerVolume, usePlayerVolume } from '@/shared/ui/player-volume'
 import { Button } from '@/shared/ui/button'
 import { FocusGroup } from '@/shared/ui/focus'
 import { IconNext, IconPause, IconPlay, IconSpark, IconStack, IconSubs, IconFullscreen } from '@/shared/ui/icons'
@@ -62,6 +63,7 @@ const PlayerContent = observer(function PlayerContent() {
       }),
   )
 
+  const volume = usePlayerVolume(vm.attach)
   const surfaceClicks = usePlayerClicks(vm.onSurfaceClick, ui.toggleFullscreen)
   const onPointerMove = (event: MouseEvent<HTMLDivElement>) => {
     vm.onPointerMove()
@@ -103,7 +105,7 @@ const PlayerContent = observer(function PlayerContent() {
     >
       {vm.hasSource && (
         // Fallback needs a fresh element: the old one is bound to hls.js's MediaSource.
-        <video key={vm.fallback ? 'file' : 'stream'} ref={vm.attach} src={vm.src} autoPlay playsInline crossOrigin="anonymous">
+        <video key={vm.fallback ? 'file' : 'stream'} ref={volume.attach} src={vm.src} autoPlay playsInline crossOrigin="anonymous">
           {vm.subtitles.url && (
             <track kind="subtitles" src={vm.subtitles.url} srcLang={vm.subtitles.lang} label={vm.subtitles.label} default />
           )}
@@ -157,6 +159,7 @@ const PlayerContent = observer(function PlayerContent() {
               onPress={vm.togglePlay}
             />
             {vm.hasEpisodes && <ControlButton focusKey={FOCUS.episodes} icon={ICON.episodes} label="Серии" onPress={vm.openEpisodes} />}
+            <PlayerVolume controller={volume} focusKey="PLAYER-volume" active={vm.hudVisible && !vm.panel && !vm.error} />
             {vm.hasTracks && <ControlButton focusKey={FOCUS.tracks} icon={ICON.tracks} label={vm.tracksLabel} onPress={vm.openTracks} />}
             {vm.hasQualityChoice && (
               <ControlButton
